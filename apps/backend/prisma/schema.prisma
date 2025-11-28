@@ -12,3 +12,43 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages      Message[]
+  conversations ConversationParticipant[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  content        String
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  messages     Message[]
+  participants ConversationParticipant[]
+  createdAt    DateTime                  @default(now())
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+
+  @@unique([userId, conversationId])
+}
