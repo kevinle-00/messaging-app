@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import "dotenv/config";
 import cors from "cors";
 import { auth } from "./auth/auth.ts";
+import conversationRoutes from "./routes/conversations.ts";
 
 const app = express();
 const httpServer = createServer(app);
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", auth.handler);
+app.use("/conversations", conversationRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
