@@ -3,8 +3,9 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import "dotenv/config";
 import cors from "cors";
+import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth/auth.ts";
-import conversationRoutes from "./routes/conversations.ts";
+import conversationRoutes from "./routes/conversations.routes.ts";
 
 const app = express();
 const httpServer = createServer(app);
@@ -17,10 +18,12 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
+
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
 app.use(express.json());
 
-app.use("/api/auth", auth.handler);
-app.use("/conversations", conversationRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -50,3 +53,4 @@ app.use(
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
