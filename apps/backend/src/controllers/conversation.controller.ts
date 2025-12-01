@@ -1,7 +1,32 @@
 import prisma from "../lib/db.ts";
 
 export const createConversation = async (req, res, next) => {
-  return console.log("Create conversation");
+  try {
+    const userId = req.user.id;
+    const { participantIds } = req.body;
+
+    // Ensure current user is always included
+    const allParticipantIds = [...new Set([userId, ...participantIds])];
+
+    const conversation = await prisma.conversation.create({
+      data: {
+        participants: {
+          createMany: {
+            data: allParticipantIds.map((id) => ({
+              userId: id,
+            })),
+          },
+        },
+      },
+      include: {
+        participants: true,
+      },
+    });
+
+    res.status(201).json(conversation);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getConversations = async (req, res, next) => {
@@ -32,5 +57,17 @@ export const getConversations = async (req, res, next) => {
 };
 
 export const getMessagesByConversationId = async (req, res, next) => {
-  return console.log("Get messages by conversation id");
+  try {
+    const conversationId = req.params.id;
+    const messages = await prisma.message.findMany({
+      where: { conversationId },
+      include: { sender: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json(messages);
+  } catch (error) {
+    next(error);
+  }
 };
+
