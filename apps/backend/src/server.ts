@@ -4,8 +4,8 @@ import { Server } from "socket.io";
 import "dotenv/config";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./auth/auth.ts";
-import conversationRoutes from "./routes/conversations.routes.ts";
+import { auth } from "./auth/auth";
+import conversationRoutes from "./routes/conversations.routes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -53,4 +53,3 @@ app.use(
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

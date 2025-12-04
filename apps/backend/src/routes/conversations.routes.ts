@@ -3,11 +3,11 @@ import {
   createConversation,
   getConversations,
   getMessagesByConversationId,
-} from "../controllers/conversation.controller.ts";
-import { requireAuth } from "../middleware/auth.middleware.ts";
-import { validateRequest } from "../middleware/validateRequest.middleware.ts";
-import { createConversationSchema } from "../schemas/conversation.schema.ts";
-import { idParamSchema } from "../schemas/common.schema.ts";
+} from "../controllers/conversation.controller";
+import { requireAuth } from "../middleware/auth.middleware";
+import { validateRequest } from "../middleware/validateRequest.middleware";
+import { createConversationSchema } from "../schemas/conversation.schema";
+import { idParamSchema } from "../schemas/common.schema";
 const router = express.Router();
 
 router.post(
@@ -22,9 +22,8 @@ router.get("/", requireAuth, getConversations);
 router.get(
   "/:id/messages",
   requireAuth,
-  validateRequest({ params: IdParamSchema }),
+  validateRequest({ params: idParamSchema }),
   getMessagesByConversationId,
 );
 
 export default router;
-
