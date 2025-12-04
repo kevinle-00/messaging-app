@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-
+import { MessageInput } from "@/components/MessageInput";
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
@@ -17,6 +17,7 @@ function HomePage() {
           <Button variant="outline" asChild>
             <a href="/signup">Sign Up</a>
           </Button>
+          <MessageInput></MessageInput>
         </div>
       </div>
     </div>
