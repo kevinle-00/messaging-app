@@ -1,6 +1,5 @@
 import {
   Item,
-  ItemActions,
   ItemContent,
   ItemDescription,
   ItemMedia,
@@ -9,11 +8,9 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { Button } from "@/components/ui/button";
-
 function UserItem() {
   return (
-    <Item variant="outline">
+    <Item variant="outline" className="py-3 px-3">
       <ItemMedia>
         <Avatar className="size-10">
           <AvatarImage src="https://github.com/evilrabbit.png" />
@@ -22,11 +19,8 @@ function UserItem() {
       </ItemMedia>
       <ItemContent>
         <ItemTitle>Test User</ItemTitle>
-        <ItemDescription>Last seen 46 minutes ago</ItemDescription>
+        <ItemDescription>Yea...</ItemDescription>
       </ItemContent>
-      <ItemActions>
-        <Button>Message</Button>
-      </ItemActions>
     </Item>
   );
 }

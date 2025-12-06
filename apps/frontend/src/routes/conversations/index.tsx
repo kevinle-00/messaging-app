@@ -4,17 +4,12 @@ export const Route = createFileRoute("/conversations/")({
   component: ConversationsPage,
 });
 
-import { UserItem } from "@/components/UserItem";
-
+//import { UserItem } from "@/components/UserItem";
 function ConversationsPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center space-y-6">
-        <UserItem></UserItem>
-        <UserItem></UserItem>
-        <UserItem></UserItem>
-        <MessageInput></MessageInput>
-      </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-auto"></div>
+      <MessageInput></MessageInput>
     </div>
   );
 }
