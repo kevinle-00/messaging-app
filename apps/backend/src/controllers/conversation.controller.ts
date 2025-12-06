@@ -1,4 +1,4 @@
-import prisma from "../lib/db.ts";
+import prisma from "../lib/db";
 
 export const createConversation = async (req, res, next) => {
   try {
@@ -70,4 +70,3 @@ export const getMessagesByConversationId = async (req, res, next) => {
     next(error);
   }
 };
-
