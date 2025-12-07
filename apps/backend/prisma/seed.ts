@@ -2,6 +2,15 @@ import prisma from "../src/lib/db";
 import { auth } from "../src/auth/auth";
 
 async function main() {
+  // Clear existing data
+  await prisma.message.deleteMany();
+  await prisma.conversationParticipant.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.account.deleteMany();
+  await prisma.verification.deleteMany();
+  await prisma.user.deleteMany();
+
   const users = [
     { email: "test1@example.com", name: "Test User 1" },
     { email: "test2@example.com", name: "Test User 2" },
@@ -10,6 +19,7 @@ async function main() {
     { email: "test5@example.com", name: "Test User 5" },
   ];
 
+  const createdUsers = [];
   for (const userData of users) {
     const user = await auth.api.signUpEmail({
       body: {
@@ -18,7 +28,37 @@ async function main() {
         name: userData.name,
       },
     });
+    console.log("Response: ", user);
+    createdUsers.push(user);
     console.log("Created user:", user);
+  }
+
+  // Create conversations between all user pairs
+  for (let i = 0; i < createdUsers.length; i++) {
+    for (let j = i + 1; j < createdUsers.length; j++) {
+      const conversation = await prisma.conversation.create({
+        data: {
+          participants: {
+            createMany: {
+              data: [
+                { userId: createdUsers[i]!.user.id },
+                { userId: createdUsers[j]!.user.id },
+              ],
+            },
+          },
+          messages: {
+            create: [
+              { content: "Hey there!", senderId: createdUsers[i]!.user.id },
+              {
+                content: "Hi! How are you?",
+                senderId: createdUsers[j]!.user.id,
+              },
+            ],
+          },
+        },
+      });
+      console.log("Created conversation:", conversation);
+    }
   }
 }
 

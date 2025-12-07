@@ -55,7 +55,11 @@ export const getConversations = async (
         },
       },
       include: {
-        participants: true,
+        participants: {
+          include: {
+            user: true,
+          },
+        },
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1,
