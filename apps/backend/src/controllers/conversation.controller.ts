@@ -1,8 +1,17 @@
 import prisma from "../lib/db";
+import type { Request, Response, NextFunction } from "express";
+import type { ValidatedRequest } from "../types/express";
+import { z } from "zod";
+import { createConversationSchema } from "../schemas/conversation.schema";
+import { idParamSchema } from "../schemas/common.schema";
 
-export const createConversation = async (req, res, next) => {
+export const createConversation = async (
+  req: ValidatedRequest<z.infer<typeof createConversationSchema>>,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
     const { participantIds } = req.body;
 
     // Ensure current user is always included
@@ -29,9 +38,13 @@ export const createConversation = async (req, res, next) => {
   }
 };
 
-export const getConversations = async (req, res, next) => {
+export const getConversations = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -56,9 +69,14 @@ export const getConversations = async (req, res, next) => {
   }
 };
 
-export const getMessagesByConversationId = async (req, res, next) => {
+export const getMessagesByConversationId = async (
+  req: ValidatedRequest<any, z.infer<typeof idParamSchema>>,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const conversationId = req.params.id;
+
     const messages = await prisma.message.findMany({
       where: { conversationId },
       include: { sender: true },
