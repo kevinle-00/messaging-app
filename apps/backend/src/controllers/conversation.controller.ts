@@ -4,6 +4,7 @@ import type { ValidatedRequest } from "../types/express";
 import { z } from "zod";
 import { createConversationSchema } from "../schemas/conversation.schema";
 import { idParamSchema } from "../schemas/common.schema";
+import { conversationSchema } from "../../../../packages/shared/src/schemas/conversation";
 
 export const createConversation = async (
   req: ValidatedRequest<z.infer<typeof createConversationSchema>>,
@@ -44,7 +45,7 @@ export const getConversations = async (
   next: NextFunction,
 ) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user!.id; //TODO: create AuthedRequest type
 
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -57,7 +58,13 @@ export const getConversations = async (
       include: {
         participants: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
           },
         },
         messages: {
@@ -67,7 +74,32 @@ export const getConversations = async (
       },
     });
 
-    return res.json(conversations);
+    const transformed = conversations.map((conv) => ({
+      id: conv.id,
+      participants: conv.participants
+        .filter((p) => p.userId !== userId)
+        .map((p) => ({
+          userId: p.user.id,
+          name: p.user.name,
+          image: p.user.image,
+        })),
+      lastMessage: conv.messages[0]
+        ? {
+            id: conv.messages[0].id,
+            content: conv.messages[0].content,
+            senderId: conv.messages[0].senderId,
+            createdAt: conv.messages[0].createdAt,
+          }
+        : null,
+    }));
+
+    console.log(
+      transformed[0]?.participants[0]?.userId,
+      transformed[0]?.lastMessage?.senderId,
+    );
+
+    const validated = transformed.map((c) => conversationSchema.parse(c));
+    return res.json(validated);
   } catch (error) {
     next(error);
   }
@@ -92,3 +124,4 @@ export const getMessagesByConversationId = async (
     next(error);
   }
 };
+

@@ -10,7 +10,7 @@ import {
   SidebarFooter,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { UserItem } from "./UserItem";
+import { ConversationItem } from "./ConversationItem";
 
 import {
   DropdownMenu,
@@ -22,8 +22,37 @@ import {
 import { ChevronUp } from "lucide-react";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
 
 export function AppSidebar() {
+  const [conversations, setConversations] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/conversations`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          },
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch");
+
+        const data = await res.json();
+        console.log(data);
+        setConversations(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch conversations",
+        );
+      }
+    };
+    fetchConversations();
+  }, []);
   return (
     <Sidebar>
       <SidebarHeader className="pl-4 text-xl font-bold">ChatApp</SidebarHeader>
@@ -32,9 +61,11 @@ export function AppSidebar() {
           <SidebarGroupLabel>Direct Messages</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {[...Array(5)].map((_, i) => (
-                <SidebarMenuItem key={i}>
-                  <UserItem></UserItem>
+              {conversations.map((conversation) => (
+                <SidebarMenuItem key={conversation.id}>
+                  <ConversationItem
+                    conversation={conversation}
+                  ></ConversationItem>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -77,4 +108,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
