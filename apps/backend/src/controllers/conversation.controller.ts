@@ -4,7 +4,8 @@ import type { ValidatedRequest } from "../types/express";
 import { z } from "zod";
 import { createConversationSchema } from "../schemas/conversation.schema";
 import { idParamSchema } from "../schemas/common.schema";
-import { conversationSchema } from "../../../../packages/shared/src/schemas/conversation";
+import { conversationSchema } from "@shared/schemas";
+//import type { Conversation } from "@shared/schemas";
 
 export const createConversation = async (
   req: ValidatedRequest<z.infer<typeof createConversationSchema>>,
@@ -93,11 +94,6 @@ export const getConversations = async (
         : null,
     }));
 
-    console.log(
-      transformed[0]?.participants[0]?.userId,
-      transformed[0]?.lastMessage?.senderId,
-    );
-
     const validated = transformed.map((c) => conversationSchema.parse(c));
     return res.json(validated);
   } catch (error) {
@@ -124,4 +120,3 @@ export const getMessagesByConversationId = async (
     next(error);
   }
 };
-
