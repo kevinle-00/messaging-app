@@ -7,26 +7,25 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarFooter,
-  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { ConversationItem } from "./ConversationItem";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import { ChevronUp } from "lucide-react";
-
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import type { Conversation } from "../../../../packages/shared/src/schemas/conversation";
+import { AppSidebarFooter } from "./AppSidebarFooter";
+import { authClient } from "@/lib/authClient";
 
 export function AppSidebar() {
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [error, setError] = useState("");
+  const { data: session } = authClient.useSession();
+
+  const user = session?.user;
+
+  //TODO: Implement sign out functionality
+
+  if (!user) {
+    return null;
+  }
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -72,39 +71,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="h-auto py-3 px-3 border">
-                  <Avatar className="size-10">
-                    <AvatarImage src="https://github.com/evilrabbit.png" />
-                    <AvatarFallback>TU</AvatarFallback>
-                  </Avatar>
-                  Test
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="[width:var(--radix-popper-anchor-width)]"
-              >
-                <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Test Item</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <AppSidebarFooter user={user}></AppSidebarFooter>
     </Sidebar>
   );
 }

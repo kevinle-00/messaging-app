@@ -1,19 +1,24 @@
 import prisma from "../lib/db";
 import type { Request, Response, NextFunction } from "express";
 import type { ValidatedRequest } from "../types/express";
-import { z } from "zod";
-import { createConversationSchema } from "../schemas/conversation.schema";
-import { idParamSchema } from "../schemas/common.schema";
+
+import {
+  createConversationSchema,
+  type CreateConversationInput,
+} from "../schemas/conversation.schema";
+import { idParamSchema, type IdParams } from "../schemas/common.schema";
 import { conversationSchema } from "@shared/schemas";
 //import type { Conversation } from "@shared/schemas";
+import type { AuthedRequest } from "../types/express";
+import type { AuthedValidatedRequest } from "../types/express";
 
 export const createConversation = async (
-  req: ValidatedRequest<z.infer<typeof createConversationSchema>>,
+  req: AuthedValidatedRequest<CreateConversationInput>,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user.id;
     const { participantIds } = req.body;
 
     // Ensure current user is always included
@@ -41,12 +46,12 @@ export const createConversation = async (
 };
 
 export const getConversations = async (
-  req: Request,
+  req: AuthedRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const userId = req.user!.id; //TODO: create AuthedRequest type
+    const userId = req.user.id;
 
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -102,7 +107,7 @@ export const getConversations = async (
 };
 
 export const getMessagesByConversationId = async (
-  req: ValidatedRequest<any, z.infer<typeof idParamSchema>>,
+  req: AuthedValidatedRequest<any, IdParams>,
   res: Response,
   next: NextFunction,
 ) => {

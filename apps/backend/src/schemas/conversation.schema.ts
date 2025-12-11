@@ -8,3 +8,5 @@ export const createConversationSchema = z.object({
       message: "Duplicate IDs are not allowed",
     }),
 });
+
+export type CreateConversationInput = z.infer<typeof createConversationSchema>;

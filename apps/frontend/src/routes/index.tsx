@@ -1,7 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { MessageInput } from "@/components/MessageInput";
+
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { authClient } from "@/lib/authClient";
+
 export const Route = createFileRoute("/")({
+  beforeLoad: async () => {
+    const { data: session } = await authClient.getSession();
+    if (session?.user) {
+      throw redirect({ to: "/conversations" });
+    }
+  },
   component: HomePage,
 });
 
@@ -17,7 +25,6 @@ function HomePage() {
           <Button variant="outline" asChild>
             <a href="/signup">Sign Up</a>
           </Button>
-          <MessageInput></MessageInput>
         </div>
       </div>
     </div>
