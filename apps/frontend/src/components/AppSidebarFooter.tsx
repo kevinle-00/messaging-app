@@ -15,8 +15,32 @@ import {
 import { ChevronUp } from "lucide-react";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
+import { useState } from "react";
+import { LogOut, Loader2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { authClient } from "@/lib/authClient";
 export function AppSidebarFooter({ user }: any) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoading(true);
+
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            navigate({ to: "/" });
+          },
+        },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign out failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <SidebarFooter>
       <SidebarMenu>
@@ -42,8 +66,22 @@ export function AppSidebarFooter({ user }: any) {
               <DropdownMenuItem>
                 <span>Test Item</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Sign out</span>
+              <DropdownMenuItem
+                onSelect={handleSignOut}
+                disabled={isLoading}
+                className="text-red-600 focus:text-red-600"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing out...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </>
+                )}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

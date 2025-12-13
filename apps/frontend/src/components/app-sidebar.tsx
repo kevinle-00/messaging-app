@@ -17,18 +17,24 @@ import { authClient } from "@/lib/authClient";
 export function AppSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [error, setError] = useState("");
-  const { data: session } = authClient.useSession();
+  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, isPending } = authClient.useSession();
 
+  //TODO: adding loading animations and proper errors
   const user = session?.user;
 
-  //TODO: Implement sign out functionality
-
-  if (!user) {
-    return null;
-  }
-
   useEffect(() => {
+    if (isPending) return;
+
+    if (!user?.id) {
+      setConversations([]);
+      setIsLoading(false);
+      return;
+    }
     const fetchConversations = async () => {
+      setIsLoading(true);
+      setError("");
+
       try {
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/conversations`,
@@ -48,10 +54,14 @@ export function AppSidebar() {
         setError(
           err instanceof Error ? err.message : "Failed to fetch conversations",
         );
+        setConversations([]);
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchConversations();
-  }, []);
+  }, [user?.id, isPending]);
   return (
     <Sidebar>
       <SidebarHeader className="pl-4 text-xl font-bold">ChatApp</SidebarHeader>

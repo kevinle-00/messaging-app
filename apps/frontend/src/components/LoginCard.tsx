@@ -12,15 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-
-interface LoginResponse {
-  token: string;
-}
-
-interface LoginRequest {
-  email: string;
-  password: string;
-}
+import { authClient } from "@/lib/authClient";
 
 export function LoginCard() {
   const [email, setEmail] = useState("");
@@ -35,23 +27,14 @@ export function LoginCard() {
     setError("");
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/sign-in/email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password } as LoginRequest),
-          credentials: "include",
-        },
-      );
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-      if (!res.ok) {
-        throw new Error("Invalid credentials");
+      if (result.error) {
+        throw new Error(result.error.message || "Invalid credentials");
       }
-
-      const data: LoginResponse = await res.json();
-
-      localStorage.setItem("token", data.token);
 
       navigate({ to: "/conversations" });
     } catch (err) {

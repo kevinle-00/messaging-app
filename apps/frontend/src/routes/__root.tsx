@@ -21,7 +21,7 @@ function RootComponent() {
   }
   if (!isAuthenticated) {
     return (
-      <main className="flex h-screen">
+      <main className="flex h-screen items-center justify-center">
         <Outlet />
       </main>
     );
