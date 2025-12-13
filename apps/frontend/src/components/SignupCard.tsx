@@ -12,16 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-
-interface SignupResponse {
-  token: string;
-}
-
-interface SignupRequest {
-  name: string;
-  email: string;
-  password: string;
-}
+import { authClient } from "@/lib/authClient";
 
 export function SignupCard() {
   const [name, setName] = useState("");
@@ -50,25 +41,19 @@ export function SignupCard() {
     }
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/sign-up/email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password } as SignupRequest),
-        },
-      );
+      const res = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
 
-      if (!res.ok) {
-        throw new Error("Signup failed");
+      if (res.error) {
+        throw new Error(res.error.message || "Sign up failed");
       }
-
-      const data: SignupResponse = await res.json();
-      localStorage.setItem("token", data.token);
 
       navigate({ to: "/conversations" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(err instanceof Error ? err.message : "Sign up failed");
     } finally {
       setIsLoading(false);
     }
