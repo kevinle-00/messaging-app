@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export function ChatMessage({
   msg,
   isOwnMessage,
@@ -8,12 +8,19 @@ export function ChatMessage({
   isOwnMessage: boolean;
 }) {
   return (
-    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
-      <Card className="max-w-[70%] w-fit">
-        <CardContent>
-          <p>{msg.sender.name}</p>
+    <div
+      className={`flex gap-3 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+    >
+      {!isOwnMessage && (
+        <Avatar className="size-10">
+          <AvatarImage src="https://github.com/evilrabbit.png" />
+          <AvatarFallback>TU</AvatarFallback>
+        </Avatar>
+      )}
+
+      <Card className="max-w-[70%] w-fit p-4 shadow-none">
+        <CardContent className="p-0">
           <p>{msg.content}</p>
-          <p>Created At: {msg.createdAt.toLocaleString()}</p>
         </CardContent>
       </Card>
     </div>

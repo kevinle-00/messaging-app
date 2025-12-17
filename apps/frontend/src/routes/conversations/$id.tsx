@@ -66,7 +66,7 @@ function ConversationPage() {
   }, [id]);
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto p-4">
         {messages.map((msg) => (
           <div key={msg.id}>
             <ChatMessage msg={msg} isOwnMessage={msg.senderId === user?.id} />
