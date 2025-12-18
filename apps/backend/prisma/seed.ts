@@ -61,9 +61,21 @@ async function main() {
                 ),
               },
               {
-                content: "Hey there!",
+                content: "We need to catch up!",
+                senderId: createdUsers[j]!.user.id,
+                createdAt: new Date(
+                  Date.now() - 2 * 24 * 60 * 60 * 1000 + 31 * 60 * 1000,
+                ),
+              },
+              {
+                content: "yo",
                 senderId: createdUsers[i]!.user.id,
                 createdAt: new Date(Date.now() - 5 * 60 * 1000),
+              },
+              {
+                content: "you still up?",
+                senderId: createdUsers[i]!.user.id,
+                createdAt: new Date(Date.now() - 4 * 60 * 1000),
               },
               {
                 content: "Hi! How are you?",
