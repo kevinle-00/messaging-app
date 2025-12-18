@@ -48,10 +48,27 @@ async function main() {
           },
           messages: {
             create: [
-              { content: "Hey there!", senderId: createdUsers[i]!.user.id },
+              {
+                content: "Long time no talk!",
+                senderId: createdUsers[i]!.user.id,
+                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              },
+              {
+                content: "Yeah, it's been a while!",
+                senderId: createdUsers[j]!.user.id,
+                createdAt: new Date(
+                  Date.now() - 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000,
+                ),
+              },
+              {
+                content: "Hey there!",
+                senderId: createdUsers[i]!.user.id,
+                createdAt: new Date(Date.now() - 5 * 60 * 1000),
+              },
               {
                 content: "Hi! How are you?",
                 senderId: createdUsers[j]!.user.id,
+                createdAt: new Date(Date.now() - 1 * 60 * 1000),
               },
             ],
           },
