@@ -1,10 +1,11 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ChatMessage } from "./ChatMessage";
+import type { Message } from "@shared/schemas";
 export function ChatGroup({
   messages,
   isOwnMessage,
 }: {
-  messages: any;
+  messages: Message[];
   isOwnMessage: boolean;
 }) {
   return (

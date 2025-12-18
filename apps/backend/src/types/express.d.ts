@@ -4,10 +4,8 @@ import type { User } from "@shared/types";
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-        email?: string;
-      };
+      user?: User;
+      session?: any;
     }
   }
 }

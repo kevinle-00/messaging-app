@@ -4,22 +4,12 @@ export const Route = createFileRoute("/conversations/$id")({
   component: ConversationPage,
 });
 import { useState, useEffect } from "react";
-
-interface Message {
-  id: string;
-  conversationId: string;
-  content: string;
-  senderId: string;
-  createdAt: string;
-  sender: {
-    id: string;
-    name: string;
-  };
-  //TODO: Migrate to using zod schemas as types (via z.infer)
-}
-
+import type { Message } from "@shared/schemas";
+import { messageSchema } from "@shared/schemas";
+import { z } from "zod";
 import { authClient } from "@/lib/authClient";
 import { ChatGroup } from "@/components/ChatGroup";
+
 function ConversationPage() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
@@ -44,7 +34,7 @@ function ConversationPage() {
         new Date(prevMsg!.createdAt).getTime();
       const threshold = 5 * 60 * 1000;
 
-      if (msg.senderId === prevMsg!.senderId && timeDiff < threshold) {
+      if (msg.sender.id === prevMsg!.sender.id && timeDiff < threshold) {
         currentGroup.push(msg);
       } else {
         groups.push(currentGroup);
@@ -76,7 +66,8 @@ function ConversationPage() {
         if (!res.ok) throw new Error("Failed to fetch");
 
         const data = await res.json();
-        setMessages(data);
+        const messages = z.array(messageSchema).parse(data);
+        setMessages(messages);
         console.log(data);
         console.log(messages);
       } catch (err) {
@@ -98,7 +89,7 @@ function ConversationPage() {
           <ChatGroup
             key={group[0]?.id}
             messages={group}
-            isOwnMessage={group[0]?.senderId === user?.id}
+            isOwnMessage={group[0]?.sender.id === user?.id}
           />
         ))}
       </div>

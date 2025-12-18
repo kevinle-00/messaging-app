@@ -9,16 +9,15 @@ import {
 import { idParamSchema, type IdParams } from "../schemas/common.schema";
 import { conversationSchema } from "@shared/schemas";
 //import type { Conversation } from "@shared/schemas";
-import type { AuthedRequest } from "../types/express";
-import type { AuthedValidatedRequest } from "../types/express";
-
-export const createConversation = async (
-  req: AuthedValidatedRequest<CreateConversationInput>,
-  res: Response,
-  next: NextFunction,
-) => {
+import type { Message } from "@shared/schemas";
+import type { RequestHandler } from "express";
+export const createConversation: RequestHandler<
+  any,
+  any,
+  CreateConversationInput
+> = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
     const { participantIds } = req.body;
 
     // Ensure current user is always included
@@ -45,13 +44,9 @@ export const createConversation = async (
   }
 };
 
-export const getConversations = async (
-  req: AuthedRequest,
-  res: Response,
-  next: NextFunction,
-) => {
+export const getConversations: RequestHandler = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -106,17 +101,27 @@ export const getConversations = async (
   }
 };
 
-export const getMessagesByConversationId = async (
-  req: AuthedValidatedRequest<any, IdParams>,
-  res: Response,
-  next: NextFunction,
-) => {
+export const getMessagesByConversationId: RequestHandler<
+  IdParams,
+  Message[]
+> = async (req, res, next) => {
   try {
     const conversationId = req.params.id;
 
     const messages = await prisma.message.findMany({
       where: { conversationId },
-      include: { sender: true },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
       orderBy: { createdAt: "asc" },
     });
 
@@ -125,3 +130,4 @@ export const getMessagesByConversationId = async (
     next(error);
   }
 };
+

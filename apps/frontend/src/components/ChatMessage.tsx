@@ -1,12 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
+import type { Message } from "@shared/schemas";
 export function ChatMessage({
   msg,
   showTimestamp,
 }: {
-  msg: any;
+  msg: Message;
   showTimestamp: boolean;
 }) {
-  const messageDate = new Date(msg.createdAt);
+  const messageDate = msg.createdAt;
   const today = new Date();
   const isToday = messageDate.toDateString() === today.toDateString();
 
