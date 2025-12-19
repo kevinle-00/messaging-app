@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/sidebar";
 import { ConversationItem } from "./ConversationItem";
 import { useEffect, useState } from "react";
-import type { Conversation } from "../../../../packages/shared/src/schemas/conversation";
 import { AppSidebarFooter } from "./AppSidebarFooter";
 import { authClient } from "@/lib/authClient";
+import type { Conversation } from "@shared/schemas";
+import z from "zod";
+import { conversationSchema } from "@shared/schemas";
 
 export function AppSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -48,8 +50,10 @@ export function AppSidebar() {
         if (!res.ok) throw new Error("Failed to fetch");
 
         const data = await res.json();
-        console.log(data);
-        setConversations(data);
+
+        const validated = z.array(conversationSchema).parse(data);
+        console.log(validated);
+        setConversations(validated);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch conversations",

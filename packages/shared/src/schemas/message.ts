@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const senderSchema = z.object({
   id: z.string(),
-  name: z.string().nullable(),
+  name: z.string(),
   image: z.string().nullable(),
 });
 

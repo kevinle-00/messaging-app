@@ -19,10 +19,18 @@ import { useState } from "react";
 import { LogOut, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/authClient";
-export function AppSidebarFooter({ user }: any) {
+import type { User } from "@shared/schemas";
+
+interface AppSidebarFooterProps {
+  user: User | undefined;
+}
+
+export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  if (!user) return <div className="p-4">Loading user...</div>;
 
   const handleSignOut = async () => {
     try {
