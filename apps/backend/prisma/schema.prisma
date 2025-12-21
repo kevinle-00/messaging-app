@@ -39,10 +39,11 @@ model Message {
 }
 
 model Conversation {
-  id           String                    @id @default(cuid())
-  messages     Message[]
-  participants ConversationParticipant[]
-  createdAt    DateTime                  @default(now())
+  id            String                    @id @default(cuid())
+  messages      Message[]
+  participants  ConversationParticipant[]
+  createdAt     DateTime                  @default(now())
+  lastMessageAt DateTime?
 }
 
 model ConversationParticipant {

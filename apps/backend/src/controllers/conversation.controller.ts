@@ -13,6 +13,7 @@ import type { RequestHandler } from "express";
 import { messageSchema } from "@shared/schemas";
 import { insertMessageSchema } from "@shared/schemas/message";
 import type { InsertMessage } from "@shared/schemas/message";
+
 const mapPrismaToConversation = (
   prismaConv: any,
   currentUserId: string,
@@ -76,7 +77,7 @@ export const createConversation: RequestHandler<
       },
     });
 
-    const validated = conversationSchema.parse(
+    const validated: Conversation = conversationSchema.parse(
       mapPrismaToConversation(conversation, userId),
     );
 
@@ -125,7 +126,9 @@ export const getConversations: RequestHandler<any, Conversation[]> = async (
       mapPrismaToConversation(conv, userId),
     );
 
-    const validated = z.array(conversationSchema).parse(transformed);
+    const validated: Conversation[] = z
+      .array(conversationSchema)
+      .parse(transformed);
 
     return res.json(validated);
   } catch (error) {
@@ -157,7 +160,7 @@ export const getMessagesByConversationId: RequestHandler<
       orderBy: { createdAt: "asc" },
     });
 
-    const validated = z.array(messageSchema).parse(messages);
+    const validated: Message[] = z.array(messageSchema).parse(messages);
 
     res.json(validated);
   } catch (error) {
@@ -175,20 +178,41 @@ export const createMessage: RequestHandler<
     const { id: conversationId } = req.params;
     const { id: userId } = req.user;
 
-    const newMessage = await prisma.message.create({
-      data: {
-        content: content,
-        conversationId: conversationId,
-        senderId: userId,
-      },
-      include: {
-        sender: {
-          select: { id: true, name: true, image: true },
-        },
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        participants: { some: { id: userId } },
       },
     });
 
-    const validated = messageSchema.parse(newMessage);
+    if (!conversation) {
+      return res.status(403).json({ error: "Not authorized" } as any);
+      //TODO: Extend error class or make own error type, create custom error handling middleware
+    }
+
+    const newMessage = await prisma.$transaction(async (tx) => {
+      const message = await tx.message.create({
+        data: {
+          content,
+          conversationId,
+          senderId: userId,
+        },
+        include: {
+          sender: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+      });
+
+      await tx.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: new Date() },
+      });
+
+      return message;
+    });
+
+    const validated: Message = messageSchema.parse(newMessage);
 
     res.status(201).json(validated);
   } catch (err) {
