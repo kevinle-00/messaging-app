@@ -11,7 +11,8 @@ import type { Conversation } from "@shared/schemas";
 import type { Message } from "@shared/schemas";
 import type { RequestHandler } from "express";
 import { messageSchema } from "@shared/schemas";
-
+import { insertMessageSchema } from "@shared/schemas/message";
+import type { InsertMessage } from "@shared/schemas/message";
 const mapPrismaToConversation = (
   prismaConv: any,
   currentUserId: string,
@@ -161,5 +162,36 @@ export const getMessagesByConversationId: RequestHandler<
     res.json(validated);
   } catch (error) {
     next(error);
+  }
+};
+
+export const createMessage: RequestHandler<
+  { id: string },
+  Message,
+  InsertMessage
+> = async (req, res, next) => {
+  try {
+    const { content } = req.body;
+    const { id: conversationId } = req.params;
+    const { id: userId } = req.user;
+
+    const newMessage = await prisma.message.create({
+      data: {
+        content: content,
+        conversationId: conversationId,
+        senderId: userId,
+      },
+      include: {
+        sender: {
+          select: { id: true, name: true, image: true },
+        },
+      },
+    });
+
+    const validated = messageSchema.parse(newMessage);
+
+    res.status(201).json(validated);
+  } catch (err) {
+    next(err);
   }
 };
