@@ -6,7 +6,7 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth/auth";
 import conversationRoutes from "./routes/conversations.routes";
-import { ZodError } from "zod";
+import { globalErrorHandler } from "./middleware/errorHandler";
 
 const app = express();
 const httpServer = createServer(app);
@@ -45,28 +45,7 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-  ) => {
-    console.error(err);
-
-    if (err instanceof ZodError) {
-      return res.status(400).json({
-        message: "Validation failed",
-        errors: err.flatten(),
-      });
-    }
-
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal server error";
-
-    res.status(status).json({ message });
-  },
-);
+app.use(globalErrorHandler);
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

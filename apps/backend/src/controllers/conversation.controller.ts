@@ -187,7 +187,7 @@ export const createMessage: RequestHandler<
 
     if (!conversation) {
       return res.status(403).json({ error: "Not authorized" } as any);
-      //TODO: Extend error class or make own error type, create custom error handling middleware
+      //TODO: Refactor all error handling to use AppError class and globalErrorHandler middleware
     }
 
     const newMessage = await prisma.$transaction(async (tx) => {
