@@ -13,6 +13,7 @@ import type { RequestHandler } from "express";
 import { messageSchema } from "@shared/schemas";
 import { insertMessageSchema } from "@shared/schemas/message";
 import type { InsertMessage } from "@shared/schemas/message";
+import { AppError } from "src/lib/AppError";
 
 const mapPrismaToConversation = (
   prismaConv: any,
@@ -77,7 +78,7 @@ export const createConversation: RequestHandler<
       },
     });
 
-    const validated: Conversation = conversationSchema.parse(
+    const validated = conversationSchema.parse(
       mapPrismaToConversation(conversation, userId),
     );
 
@@ -126,9 +127,7 @@ export const getConversations: RequestHandler<any, Conversation[]> = async (
       mapPrismaToConversation(conv, userId),
     );
 
-    const validated: Conversation[] = z
-      .array(conversationSchema)
-      .parse(transformed);
+    const validated = z.array(conversationSchema).parse(transformed);
 
     return res.json(validated);
   } catch (error) {
@@ -149,6 +148,7 @@ export const getMessagesByConversationId: RequestHandler<
         id: true,
         content: true,
         createdAt: true,
+        senderId: true,
         sender: {
           select: {
             id: true,
@@ -160,7 +160,7 @@ export const getMessagesByConversationId: RequestHandler<
       orderBy: { createdAt: "asc" },
     });
 
-    const validated: Message[] = z.array(messageSchema).parse(messages);
+    const validated = z.array(messageSchema).parse(messages);
 
     res.json(validated);
   } catch (error) {
@@ -186,8 +186,7 @@ export const createMessage: RequestHandler<
     });
 
     if (!conversation) {
-      return res.status(403).json({ error: "Not authorized" } as any);
-      //TODO: Refactor all error handling to use AppError class and globalErrorHandler middleware
+      throw new AppError("Not authorised", 403);
     }
 
     const newMessage = await prisma.$transaction(async (tx) => {
@@ -212,7 +211,7 @@ export const createMessage: RequestHandler<
       return message;
     });
 
-    const validated: Message = messageSchema.parse(newMessage);
+    const validated = messageSchema.parse(newMessage);
 
     res.status(201).json(validated);
   } catch (err) {
