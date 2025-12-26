@@ -12,8 +12,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -38,10 +39,81 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-io.on("connection", (socket) => {
+const activeUsers = new Map();
+
+io.on("socket", (socket) => {
   console.log("User connected: ", socket.id);
+
+  socket.on(
+    "user_join",
+    ({ userId, username }: { userId: string; username: string }) => {
+      activeUsers.set(socket.id, { userId, username });
+      socket.userId = userId;
+      console.log(`${username} joined (${userId})`);
+    },
+  );
+
+  socket.on("join_conversations", (conversationId: string) => {
+    socket.join(conversationId);
+    console.log(`Socket ${socket.id} joined ${conversationId}`);
+
+    socket.to(conversationId).emit("user_joined_conversation", {
+      userId: socket.userId,
+      username: activeUsers.get(socket.id)?.username,
+    });
+  });
+
+  socket.on("leave_conversation", (conversationId: string) => {
+    socket.leave(conversationId);
+    console.log(`Socket ${socket.id} left conversation ${conversationId}`);
+
+    socket.to(conversationId).emit("user_left_conversation", {
+      userId: socket.userId,
+    });
+  });
+
+  socket.on(
+    "send_message",
+    ({
+      conversationId,
+      message,
+    }: {
+      conversationId: string;
+      message: string;
+    }) => {
+      io.to(conversationId).emit("new_message", {
+        conversationId,
+        message,
+        sender: {
+          userId: socket.userId,
+          username: activeUsers.get(socket.id)?.username,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
+
+  socket.on("typing_start", (conversationId: string) => {
+    socket.to(conversationId).emit("user_typing", {
+      userId: socket.userId,
+      username: activeUsers.get(socket.id)?.username,
+    });
+  });
+
+  socket.on("typing_stop", (conversationId: string) => {
+    socket.to(conversationId).emit("user_stopped_typing", {
+      userId: socket.userId,
+    });
+  });
+
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    const user = activeUsers.get(socket.id);
+    console.log("User disconnected:", socket.id, user?.username);
+    activeUsers.delete(socket.id);
+  });
+
+  socket.on("error", (error: Error) => {
+    console.error("Socket error:", error);
   });
 });
 
