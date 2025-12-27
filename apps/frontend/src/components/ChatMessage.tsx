@@ -7,7 +7,7 @@ export function ChatMessage({
   msg: Message;
   showTimestamp: boolean;
 }) {
-  const messageDate = msg.createdAt;
+  const messageDate = msg.createdAt ? new Date(msg.createdAt) : new Date();
   const today = new Date();
   const isToday = messageDate.toDateString() === today.toDateString();
 

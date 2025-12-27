@@ -9,6 +9,7 @@ import { messageSchema } from "@shared/schemas";
 import { z } from "zod";
 import { authClient } from "@/lib/authClient";
 import { ChatGroup } from "@/components/ChatGroup";
+import socket from "@/lib/socket";
 
 function ConversationPage() {
   const { data: session } = authClient.useSession();
@@ -17,6 +18,8 @@ function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   const groupMessages = (messages: Message[]) => {
     const groups: Message[][] = [];
@@ -82,6 +85,59 @@ function ConversationPage() {
 
     getMessages();
   }, [id]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    socket.connect();
+    socket.emit("user_join", {
+      userId: user.id,
+      username: user.name,
+    });
+
+    socket.emit("join_conversation", id);
+
+    socket.on("new_message", (data) => {
+      setMessages((prev) => [...prev, data.message]);
+    });
+
+    socket.on("user_typing", (data) => {
+      setTypingUsers((prev) => [...prev, data.username]);
+    });
+
+    socket.on("user_stopped_typing", (data) => {
+      setTypingUsers((prev) => prev.filter((user) => user !== data.username));
+    });
+
+    return () => {
+      socket.emit("leave_conversation", id);
+      socket.off("new_message");
+      socket.off("user_typing");
+      socket.off("user_stopped_typing");
+    };
+  }, [id, user]);
+
+  const sendMessage = () => {
+    if (!inputValue.trim() || !user) return;
+
+    socket.emit("send_message", {
+      conversationId: id,
+      message: {
+        id: Date.now(),
+        content: inputValue,
+        senderId: user.id,
+        sender: {
+          id: user.id,
+          name: user.name,
+          image: user.name,
+        },
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    setInputValue("");
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto p-4">
@@ -93,7 +149,11 @@ function ConversationPage() {
           />
         ))}
       </div>
-      <MessageInput></MessageInput>
+      <MessageInput
+        value={inputValue}
+        onChange={setInputValue}
+        sendMessage={sendMessage}
+      ></MessageInput>
     </div>
   );
 }

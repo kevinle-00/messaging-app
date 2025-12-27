@@ -39,26 +39,27 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-const activeUsers = new Map();
+const activeUsers = new Map<string, { userId: string; username: string }>();
+const socketUserMap = new Map<string, string>();
 
-io.on("socket", (socket) => {
+io.on("connection", (socket) => {
   console.log("User connected: ", socket.id);
 
   socket.on(
     "user_join",
     ({ userId, username }: { userId: string; username: string }) => {
       activeUsers.set(socket.id, { userId, username });
-      socket.userId = userId;
+      socketUserMap.set(socket.id, userId);
       console.log(`${username} joined (${userId})`);
     },
   );
 
-  socket.on("join_conversations", (conversationId: string) => {
+  socket.on("join_conversation", (conversationId: string) => {
     socket.join(conversationId);
     console.log(`Socket ${socket.id} joined ${conversationId}`);
 
     socket.to(conversationId).emit("user_joined_conversation", {
-      userId: socket.userId,
+      userId: socketUserMap.get(socket.id),
       username: activeUsers.get(socket.id)?.username,
     });
   });
@@ -68,7 +69,7 @@ io.on("socket", (socket) => {
     console.log(`Socket ${socket.id} left conversation ${conversationId}`);
 
     socket.to(conversationId).emit("user_left_conversation", {
-      userId: socket.userId,
+      userId: socketUserMap.get(socket.id),
     });
   });
 
@@ -85,7 +86,7 @@ io.on("socket", (socket) => {
         conversationId,
         message,
         sender: {
-          userId: socket.userId,
+          userId: socketUserMap.get(socket.id),
           username: activeUsers.get(socket.id)?.username,
         },
         timestamp: new Date().toISOString(),
@@ -95,14 +96,14 @@ io.on("socket", (socket) => {
 
   socket.on("typing_start", (conversationId: string) => {
     socket.to(conversationId).emit("user_typing", {
-      userId: socket.userId,
+      userId: socketUserMap.get(socket.id),
       username: activeUsers.get(socket.id)?.username,
     });
   });
 
   socket.on("typing_stop", (conversationId: string) => {
     socket.to(conversationId).emit("user_stopped_typing", {
-      userId: socket.userId,
+      userId: socketUserMap.get(socket.id),
     });
   });
 
@@ -110,6 +111,7 @@ io.on("socket", (socket) => {
     const user = activeUsers.get(socket.id);
     console.log("User disconnected:", socket.id, user?.username);
     activeUsers.delete(socket.id);
+    socketUserMap.delete(socket.id);
   });
 
   socket.on("error", (error: Error) => {
@@ -122,3 +124,4 @@ app.use(globalErrorHandler);
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
