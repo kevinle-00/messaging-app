@@ -10,6 +10,7 @@ import { z } from "zod";
 import { authClient } from "@/lib/authClient";
 import { ChatGroup } from "@/components/ChatGroup";
 import socket from "@/lib/socket";
+import type { InsertMessage } from "@shared/schemas/message";
 
 function ConversationPage() {
   const { data: session } = authClient.useSession();
@@ -120,22 +121,28 @@ function ConversationPage() {
   const sendMessage = () => {
     if (!inputValue.trim() || !user) return;
 
-    socket.emit("send_message", {
+    const tempId = Date.now().toString();
+    const newMessagePayload: InsertMessage = {
+      content: inputValue,
       conversationId: id,
-      message: {
-        id: Date.now(),
-        content: inputValue,
-        senderId: user.id,
-        sender: {
-          id: user.id,
-          name: user.name,
-          image: user.name,
-        },
-        createdAt: new Date().toISOString(),
-      },
-    });
+    };
 
+    const optimisticMessage: Message = {
+      id: tempId,
+      content: inputValue,
+      createdAt: new Date(),
+      senderId: user.id,
+      sender: {
+        id: user.id,
+        name: user.name,
+        image: user.image ?? null,
+      },
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
+
+    //TODO: Need to implemnt persistence by calling backend createMessage endpoint
   };
 
   return (
