@@ -118,7 +118,7 @@ function ConversationPage() {
     };
   }, [id, user]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!inputValue.trim() || !user) return;
 
     const tempId = Date.now().toString();
@@ -142,7 +142,24 @@ function ConversationPage() {
     setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
 
-    //TODO: Need to implemnt persistence by calling backend createMessage endpoint
+    //TODO: need to make use of websockets so other user also has the messages rendered.
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/conversations/${id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newMessagePayload),
+          credentials: "include",
+        },
+      );
+
+      if (!res.ok) throw new Error("failed to send");
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
+    }
   };
 
   return (

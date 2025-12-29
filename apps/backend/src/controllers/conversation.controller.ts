@@ -181,7 +181,7 @@ export const createMessage: RequestHandler<
     const conversation = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
-        participants: { some: { id: userId } },
+        participants: { some: { userId: userId } },
       },
     });
 

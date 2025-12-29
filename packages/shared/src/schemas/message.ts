@@ -16,6 +16,7 @@ export const messageSchema = z.object({
 
 export const insertMessageSchema = z.object({
   content: z.string().min(1, "Message cannot be empty").max(1000),
+  conversationId: z.string(),
 });
 
 export type Message = z.infer<typeof messageSchema>;
