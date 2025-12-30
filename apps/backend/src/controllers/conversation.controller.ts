@@ -14,6 +14,7 @@ import { messageSchema } from "@shared/schemas";
 import { insertMessageSchema } from "@shared/schemas/message";
 import type { InsertMessage } from "@shared/schemas/message";
 import { AppError } from "src/lib/AppError";
+import { getIO } from "src/lib/socket-server";
 
 const mapPrismaToConversation = (
   prismaConv: any,
@@ -214,6 +215,9 @@ export const createMessage: RequestHandler<
     const validated = messageSchema.parse(newMessage);
 
     res.status(201).json(validated);
+    const io = getIO();
+    io.to(conversationId).emit("new_message", validated);
+    console.log("message emitted");
   } catch (err) {
     next(err);
   }

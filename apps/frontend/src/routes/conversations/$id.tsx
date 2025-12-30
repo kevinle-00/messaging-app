@@ -99,7 +99,9 @@ function ConversationPage() {
     socket.emit("join_conversation", id);
 
     socket.on("new_message", (data) => {
+      const validatedMessage = messageSchema.parse(data.message);
       setMessages((prev) => [...prev, data.message]);
+      console.log("message received", data.message);
     });
 
     socket.on("user_typing", (data) => {

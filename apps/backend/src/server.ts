@@ -7,16 +7,11 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth/auth";
 import conversationRoutes from "./routes/conversations.routes";
 import { globalErrorHandler } from "./middleware/errorHandler";
+import { initialiseSocket } from "./lib/socket-server";
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+const io = initialiseSocket(httpServer);
 
 const PORT = process.env.PORT || 3001;
 
@@ -124,4 +119,3 @@ app.use(globalErrorHandler);
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
