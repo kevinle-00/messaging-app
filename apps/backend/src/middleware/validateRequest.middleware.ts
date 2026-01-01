@@ -16,17 +16,17 @@ export function validateRequest(schemas: {
         req.body = await schemas.body.parseAsync(req.body);
       }
       if (schemas.params) {
-        req.params = await schemas.params.parseAsync(req.params);
+        req.params = (await schemas.params.parseAsync(req.params)) as any;
       }
       if (schemas.query) {
-        req.query = await schemas.query.parseAsync(req.query);
+        req.query = (await schemas.query.parseAsync(req.query)) as any;
       }
       next();
     } catch (err) {
       if (err instanceof z.ZodError) {
         res.status(400).json({
           error: "Validation failed",
-          details: err.errors.map((e) => ({
+          details: err.issues.map((e) => ({
             path: e.path.join("."),
             message: e.message,
           })),

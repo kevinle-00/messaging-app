@@ -4,3 +4,8 @@ npm-debug.log*
 dist/
 .env
 .env.local
+**/*.d.ts
+**/*.d.ts.map
+**/*.js
+**/*.js.map
+**/*.tsbuildinfo

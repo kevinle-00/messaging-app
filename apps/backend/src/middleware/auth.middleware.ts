@@ -1,7 +1,11 @@
 import { auth } from "../auth/auth";
 import { fromNodeHeaders } from "better-auth/node";
-
-export const requireAuth = async (req, res, next) => {
+import type { Request, Response, NextFunction } from "express";
+export const requireAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(req.headers),
   });

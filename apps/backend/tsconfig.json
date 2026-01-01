@@ -11,10 +11,13 @@
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true,
     "noUncheckedSideEffectImports": true,
+    "composite": true,
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../packages/shared/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "../../packages/shared" }]
 }
+
