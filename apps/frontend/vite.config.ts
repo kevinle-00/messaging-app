@@ -22,4 +22,19 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "../../packages/shared/src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom"],
+          zod: ["zod"],
+          "ui-vendor": [
+            "lucide-react",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-menu",
+          ],
+        },
+      },
+    },
+  },
 });
