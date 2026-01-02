@@ -15,6 +15,8 @@ import { authClient } from "@/lib/authClient";
 import type { Conversation } from "@shared/schemas";
 import z from "zod";
 import { conversationSchema } from "@shared/schemas";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function AppSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -22,7 +24,6 @@ export function AppSidebar() {
   const [isLoading, setIsLoading] = useState(true);
   const { data: session, isPending } = authClient.useSession();
 
-  //TODO: adding loading animations and proper errors
   const user = session?.user;
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export function AppSidebar() {
       setIsLoading(false);
       return;
     }
+
     const fetchConversations = async () => {
       setIsLoading(true);
       setError("");
@@ -47,17 +49,26 @@ export function AppSidebar() {
           },
         );
 
-        if (!res.ok) throw new Error("Failed to fetch");
+        if (!res.ok) {
+          throw new Error(
+            res.status === 401
+              ? "Unauthorised"
+              : `Failed to fetch conversations (${res.status})`,
+          );
+        }
 
         const data = await res.json();
-
         const validated = z.array(conversationSchema).parse(data);
-        console.log(validated);
         setConversations(validated);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch conversations",
-        );
+        const errorMessage =
+          err instanceof z.ZodError
+            ? "Invalid data received from server"
+            : err instanceof Error
+              ? err.message
+              : "Failed to fetch conversations";
+
+        setError(errorMessage);
         setConversations([]);
       } finally {
         setIsLoading(false);
@@ -66,6 +77,7 @@ export function AppSidebar() {
 
     fetchConversations();
   }, [user?.id, isPending]);
+
   return (
     <Sidebar>
       <SidebarHeader className="pl-4 text-xl font-bold">ChatApp</SidebarHeader>
@@ -73,19 +85,32 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Direct Messages</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {conversations.map((conversation) => (
-                <SidebarMenuItem key={conversation.id}>
-                  <ConversationItem
-                    conversation={conversation}
-                  ></ConversationItem>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            {isLoading || isPending ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : error ? (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : conversations.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No conversations yet
+              </div>
+            ) : (
+              <SidebarMenu>
+                {conversations.map((conversation) => (
+                  <SidebarMenuItem key={conversation.id}>
+                    <ConversationItem conversation={conversation} />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <AppSidebarFooter user={user}></AppSidebarFooter>
+      <AppSidebarFooter user={user} />
     </Sidebar>
   );
 }

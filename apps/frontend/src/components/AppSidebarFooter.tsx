@@ -20,6 +20,8 @@ import { LogOut, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/authClient";
 import type { User } from "@shared/schemas";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AppSidebarFooterProps {
   user: User | undefined;
@@ -30,7 +32,10 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  if (!user) return <div className="p-4">Loading user...</div>;
+  if (!user) {
+    setIsLoading(true);
+    return;
+  }
 
   const handleSignOut = async () => {
     try {
@@ -55,13 +60,29 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="h-auto py-3 px-3 border">
-                <Avatar className="size-10">
-                  <AvatarImage src="https://github.com/evilrabbit.png" />
-                  <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-                {user.name}
-                <ChevronUp className="ml-auto" />
+              <SidebarMenuButton className="h-auto py-3 px-3 border flex items-center justify-center">
+                {isLoading ? (
+                  <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                ) : error ? (
+                  <Alert
+                    variant="destructive"
+                    className="border-none bg-transparent"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    <Avatar className="size-10">
+                      <AvatarImage src="https://github.com/evilrabbit.png" />
+                      <AvatarFallback>
+                        {user.name.substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {user.name}
+                    <ChevronUp className="ml-auto" />
+                  </>
+                )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent

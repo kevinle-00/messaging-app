@@ -11,6 +11,8 @@ import { authClient } from "@/lib/authClient";
 import { ChatGroup } from "@/components/ChatGroup";
 import socket from "@/lib/socket";
 import type { InsertMessage } from "@shared/schemas/message";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function ConversationPage() {
   const { data: session } = authClient.useSession();
@@ -20,7 +22,8 @@ function ConversationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  // TODO: implement typing indicator UI
+  // const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   const groupMessages = (messages: Message[]) => {
     const groups: Message[][] = [];
@@ -100,17 +103,17 @@ function ConversationPage() {
 
     socket.on("new_message", (data) => {
       const validatedMessage = messageSchema.parse(data.message);
-      setMessages((prev) => [...prev, data.message]);
-      console.log("message received", data.message);
+      setMessages((prev) => [...prev, validatedMessage]);
+      console.log("message received: ", validatedMessage);
     });
 
-    socket.on("user_typing", (data) => {
-      setTypingUsers((prev) => [...prev, data.username]);
-    });
+    // socket.on("user_typing", (data) => {
+    //   setTypingUsers((prev) => [...prev, data.username]);
+    // });
 
-    socket.on("user_stopped_typing", (data) => {
-      setTypingUsers((prev) => prev.filter((user) => user !== data.username));
-    });
+    // socket.on("user_stopped_typing", (data) => {
+    //   setTypingUsers((prev) => prev.filter((user) => user !== data.username));
+    // });
 
     return () => {
       socket.emit("leave_conversation", id);
@@ -167,13 +170,24 @@ function ConversationPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto p-4">
-        {groupMessages(messages).map((group) => (
-          <ChatGroup
-            key={group[0]?.id}
-            messages={group}
-            isOwnMessage={group[0]?.sender.id === user?.id}
-          />
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
+          groupMessages(messages).map((group) => (
+            <ChatGroup
+              key={group[0]?.id}
+              messages={group}
+              isOwnMessage={group[0]?.sender.id === user?.id}
+            />
+          ))
+        )}
       </div>
       <MessageInput
         value={inputValue}
