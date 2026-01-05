@@ -21,11 +21,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Generate Prisma Client
-        run: npx prisma generate --schema=apps/backend/prisma/schema.prisma
-
-      - name: Build Dependencies
-        run: npm run build --workspace=@monorepo/shared
+      - name: Build
+        run: npm run build
 
       - name: Type Check
         run: npm run build

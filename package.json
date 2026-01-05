@@ -9,8 +9,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspace",
+    "build": "npm run build -w @monorepo/shared && npx prisma generate --schema=apps/backend/prisma/schema.prisma && npm run build -w backend && npm run build -w frontend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,3 +26,4 @@
   },
   "homepage": "https://github.com/kevinle-00/messaging-app#readme"
 }
+
