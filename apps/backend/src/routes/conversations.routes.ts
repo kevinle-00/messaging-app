@@ -4,12 +4,12 @@ import {
   getConversations,
   getMessagesByConversationId,
   createMessage,
-} from "../controllers/conversation.controller";
-import { requireAuth } from "../middleware/auth.middleware";
-import { validateRequest } from "../middleware/validateRequest.middleware";
-import { createConversationSchema } from "../schemas/conversation.schema";
-import { idParamSchema } from "../schemas/common.schema";
-import { insertMessageSchema } from "@shared/schemas/message";
+} from "../controllers/conversation.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
+import { validateRequest } from "../middleware/validateRequest.middleware.js";
+import { createConversationSchema } from "../schemas/conversation.schema.js";
+import { idParamSchema } from "../schemas/common.schema.js";
+import { insertMessageSchema } from "@monorepo/shared/schemas/message";
 
 const router = express.Router();
 

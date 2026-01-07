@@ -4,10 +4,10 @@ import { Server } from "socket.io";
 import "dotenv/config";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./auth/auth";
-import conversationRoutes from "./routes/conversations.routes";
-import { globalErrorHandler } from "./middleware/errorHandler";
-import { initialiseSocket } from "./lib/socket-server";
+import { auth } from "./auth/auth.js";
+import conversationRoutes from "./routes/conversations.routes.js";
+import { globalErrorHandler } from "./middleware/errorHandler.js";
+import { initialiseSocket } from "./lib/socket-server.js";
 
 console.log("Booting server...");
 console.log("PORT:", process.env.PORT);

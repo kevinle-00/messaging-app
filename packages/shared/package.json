@@ -4,14 +4,18 @@
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./schemas": "./dist/schemas/index.js"
+    "./schemas": "./dist/schemas/index.js",
+    "./schemas/message": "./dist/schemas/message.js"
   },
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsup"
   },
   "dependencies": {
     "zod": "^4.1.13"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "tsup": "^8.5.1"
+  }
 }

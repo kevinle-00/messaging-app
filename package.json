@@ -11,7 +11,9 @@
   "scripts": {
     "dev": "npm run dev --workspace",
     "build": "npm run build -w @monorepo/shared && npx prisma generate --schema=apps/backend/prisma/schema.prisma && npm run build -w backend && npm run build -w frontend",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:frontend": "vite preview -w frontend",
+    "start:backend": "node dist/server.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,8 @@
   "bugs": {
     "url": "https://github.com/kevinle-00/messaging-app/issues"
   },
-  "homepage": "https://github.com/kevinle-00/messaging-app#readme"
+  "homepage": "https://github.com/kevinle-00/messaging-app#readme",
+  "dependencies": {
+    "@esbuild/darwin-arm64": "^0.27.2"
+  }
 }
-

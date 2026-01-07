@@ -1,20 +1,20 @@
-import prisma from "../lib/db";
+import prisma from "../lib/db.js";
 import z from "zod";
 import {
   createConversationSchema,
   type CreateConversationInput,
 } from "../schemas/conversation.schema";
-import { idParamSchema, type IdParams } from "../schemas/common.schema";
-import { conversationSchema } from "@shared/schemas";
-import type { Conversation } from "@shared/schemas";
+import { idParamSchema, type IdParams } from "../schemas/common.schema.js";
+import { conversationSchema } from "@monorepo/shared/schemas";
+import type { Conversation } from "@monorepo/shared/schemas";
 //import type { Conversation } from "@shared/schemas";
-import type { Message } from "@shared/schemas";
+import type { Message } from "@monorepo/shared/schemas";
 import type { RequestHandler } from "express";
-import { messageSchema } from "@shared/schemas";
-import { insertMessageSchema } from "@shared/schemas/message";
-import type { InsertMessage } from "@shared/schemas/message";
-import { AppError } from "src/lib/AppError";
-import { getIO } from "src/lib/socket-server";
+import { messageSchema } from "@monorepo/shared/schemas";
+import { insertMessageSchema } from "@monorepo/shared/schemas/message";
+import type { InsertMessage } from "@monorepo/shared/schemas/message";
+import { AppError } from "../lib/AppError.js";
+import { getIO } from "../lib/socket-server.js";
 
 const mapPrismaToConversation = (
   prismaConv: any,

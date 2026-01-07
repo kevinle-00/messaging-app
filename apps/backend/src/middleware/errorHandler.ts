@@ -4,7 +4,7 @@ import type {
   NextFunction,
   ErrorRequestHandler,
 } from "express";
-import { AppError } from "src/lib/AppError";
+import { AppError } from "../lib/AppError.js";
 import { ZodError } from "zod";
 import z from "zod";
 
