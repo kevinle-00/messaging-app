@@ -9,6 +9,10 @@ import conversationRoutes from "./routes/conversations.routes";
 import { globalErrorHandler } from "./middleware/errorHandler";
 import { initialiseSocket } from "./lib/socket-server";
 
+console.log("Booting server...");
+console.log("PORT:", process.env.PORT);
+console.log("FRONTEND_URL exists:", !!process.env.FRONTEND_URL);
+
 const app = express();
 const httpServer = createServer(app);
 const io = initialiseSocket(httpServer);
