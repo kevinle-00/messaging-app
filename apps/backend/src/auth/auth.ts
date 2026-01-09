@@ -4,7 +4,9 @@ import prisma from "../lib/db.js";
 
 export const auth = betterAuth({
   baseURL: `http://localhost:${process.env.PORT}`,
-  trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL].filter((origin): origin is string => Boolean(origin)),
+  trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL].filter(
+    (origin): origin is string => Boolean(origin),
+  ),
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),

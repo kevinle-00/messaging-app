@@ -38,6 +38,10 @@ app.use(express.json());
 
 app.use("/api/conversations", conversationRoutes);
 
+app.get("/", (req, res) => {
+  res.status(200).send("Backend is healthy!");
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
