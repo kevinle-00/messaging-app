@@ -12,6 +12,7 @@ import { initialiseSocket } from "./lib/socket-server.js";
 console.log("Booting server...");
 console.log("PORT:", process.env.PORT);
 console.log("FRONTEND_URL exists:", !!process.env.FRONTEND_URL);
+console.log("FRONTEND_URL: ", process.env.FRONTEND_URL); //TODO: delete after
 
 const app = express();
 const httpServer = createServer(app);
