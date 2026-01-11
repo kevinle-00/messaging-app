@@ -36,7 +36,11 @@ app.use(
   }),
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
+app.all("/api/auth/*splat", (req, res, next) => {
+  console.log("Auth request origin:", req.headers.origin);
+  console.log("Auth request host:", req.headers.host);
+  return toNodeHandler(auth)(req, res, next);
+});
 
 app.use(express.json());
 
