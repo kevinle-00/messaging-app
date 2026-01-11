@@ -41,7 +41,7 @@ export function AppSidebar() {
 
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/conversations`,
+          `/api/conversations`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },

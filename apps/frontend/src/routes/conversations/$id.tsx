@@ -60,7 +60,7 @@ function ConversationPage() {
 
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/conversations/${id}/messages`,
+          `/api/conversations/${id}/messages`,
           {
             method: "GET",
             headers: {
@@ -151,7 +151,7 @@ function ConversationPage() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/conversations/${id}/messages`,
+        `/api/conversations/${id}/messages`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

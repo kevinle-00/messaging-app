@@ -3,11 +3,20 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "../lib/db.js";
 
 export const auth = betterAuth({
-  baseURL:
-    process.env.BETTER_AUTH_URL || `http://localhost:${process.env.PORT}`,
-  trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL].filter(
-    (origin): origin is string => Boolean(origin),
-  ),
+  trustedOrigins: (request) => {
+    const origins = ["http://localhost:3000", process.env.FRONTEND_URL].filter(
+      (o): o is string => Boolean(o),
+    );
+
+    const origin = request?.headers.get("origin");
+    if (
+      origin &&
+      /^https:\/\/messaging-app-frontend.*\.vercel\.app$/.test(origin)
+    ) {
+      origins.push(origin);
+    }
+    return origins;
+  },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -15,7 +24,7 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === "production",
   },
   cookie: {
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    sameSite: "lax",
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
@@ -25,3 +34,4 @@ export const auth = betterAuth({
     enabled: true,
   },
 });
+
