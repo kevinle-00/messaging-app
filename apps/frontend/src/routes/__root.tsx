@@ -10,6 +10,8 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const { data: session, isPending } = authClient.useSession();
+  console.log("Session:", session);
+  console.log("isPending:", isPending);
   const isAuthenticated = !!session?.user;
 
   if (isPending) {
