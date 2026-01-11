@@ -13,6 +13,7 @@ console.log("Booting server...");
 console.log("PORT:", process.env.PORT);
 console.log("FRONTEND_URL exists:", !!process.env.FRONTEND_URL);
 console.log("FRONTEND_URL: ", process.env.FRONTEND_URL); //TODO: delete after
+console.log("BETTER_AUTH_URL: ", process.env.BETTER_AUTH_URL);
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +26,8 @@ const allowedOrigins = [
   "http://localhost:3000",
   process.env.FRONTEND_URL,
 ].filter((origin): origin is string => Boolean(origin));
+
+console.log("Allowed origins:", allowedOrigins);
 
 app.use(
   cors({

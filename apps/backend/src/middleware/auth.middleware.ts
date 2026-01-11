@@ -10,6 +10,9 @@ export const requireAuth = async (
     headers: fromNodeHeaders(req.headers),
   });
 
+  console.log("Request origin:", req.headers.origin);
+  console.log("Session user:", session?.user?.id);
+
   if (!session) {
     return res.status(401).json({ error: "Unauthenticated" });
   }

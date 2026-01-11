@@ -19,6 +19,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     path: req.path,
     method: req.method,
+    origin: req.headers.origin,
   });
 
   if (err instanceof ZodError) {
