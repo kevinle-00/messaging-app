@@ -8,6 +8,7 @@ import { auth } from "./auth/auth.js";
 import conversationRoutes from "./routes/conversations.routes.js";
 import { globalErrorHandler } from "./middleware/errorHandler.js";
 import { initialiseSocket } from "./lib/socket-server.js";
+import userRoutes from "./routes/user.routes.js";
 
 console.log("Booting server...");
 console.log("PORT:", process.env.PORT);
@@ -39,12 +40,13 @@ app.use(
 app.all("/api/auth/*splat", (req, res, next) => {
   console.log("Auth request origin:", req.headers.origin);
   console.log("Auth request host:", req.headers.host);
-  return toNodeHandler(auth)(req, res, next);
+  return toNodeHandler(auth)(req, res);
 });
 
 app.use(express.json());
 
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send("Backend is healthy!");
@@ -139,3 +141,4 @@ app.use(globalErrorHandler);
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
