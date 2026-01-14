@@ -19,7 +19,16 @@ async function main() {
     { email: "test5@example.com", name: "Test User 5" },
   ];
 
-  const createdUsers = [];
+  const lonelyUsers = [
+    { email: "lonely1@example.com", name: "Lonely User 1" },
+    { email: "lonely2@example.com", name: "Lonely User 2" },
+    { email: "lonely3@example.com", name: "Lonely User 3" },
+    { email: "lonely4@example.com", name: "Lonely User 4" },
+    { email: "lonely5@example.com", name: "Lonely User 5" },
+  ];
+
+  const createdUsers: Awaited<ReturnType<typeof auth.api.signUpEmail>>[] = [];
+
   for (const userData of users) {
     const user = await auth.api.signUpEmail({
       body: {
@@ -31,6 +40,18 @@ async function main() {
     console.log("Response: ", user);
     createdUsers.push(user);
     console.log("Created user:", user);
+  }
+
+  // Create users without conversations (for testing New Conversation feature)
+  for (const userData of lonelyUsers) {
+    const user = await auth.api.signUpEmail({
+      body: {
+        email: userData.email,
+        password: "testpassword123",
+        name: userData.name,
+      },
+    });
+    console.log("Created lonely user:", user);
   }
 
   // Create conversations between all user pairs

@@ -4,13 +4,25 @@ import { userSchema } from "@monorepo/shared/schemas";
 import type { User } from "@monorepo/shared/schemas";
 import type { RequestHandler } from "express";
 
-export const getUsers: RequestHandler<any, User[]> = async (req, res, next) => {
+export const getUsers: RequestHandler<unknown, User[]> = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, excludeExisting } = req.query;
     const userId = req.user!.id;
+
     const users = await prisma.user.findMany({
       where: {
         id: { not: userId },
+        ...(excludeExisting === "true" && {
+          NOT: {
+            conversations: {
+              some: {
+                conversation: {
+                  participants: { some: { userId } },
+                },
+              },
+            },
+          },
+        }),
       },
       select: {
         id: true,
