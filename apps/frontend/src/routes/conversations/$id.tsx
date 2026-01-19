@@ -59,16 +59,13 @@ function ConversationPage() {
       setError("");
 
       try {
-        const res = await fetch(
-          `/api/conversations/${id}/messages`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
+        const res = await fetch(`/api/conversations/${id}/messages`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          credentials: "include",
+        });
 
         if (!res.ok) throw new Error("Failed to fetch");
 
@@ -102,7 +99,9 @@ function ConversationPage() {
     socket.emit("join_conversation", id);
 
     socket.on("new_message", (data) => {
-      const validatedMessage = messageSchema.parse(data.message);
+      const validatedMessage = messageSchema.parse(data);
+
+      if (validatedMessage.senderId === user.id) return;
       setMessages((prev) => [...prev, validatedMessage]);
       console.log("message received: ", validatedMessage);
     });
@@ -150,15 +149,12 @@ function ConversationPage() {
     //TODO: need to make use of websockets so other user also has the messages rendered.
 
     try {
-      const res = await fetch(
-        `/api/conversations/${id}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newMessagePayload),
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/conversations/${id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newMessagePayload),
+        credentials: "include",
+      });
 
       if (!res.ok) throw new Error("failed to send");
     } catch (err) {
@@ -197,3 +193,4 @@ function ConversationPage() {
     </div>
   );
 }
+
