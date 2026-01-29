@@ -121,6 +121,7 @@ io.on("connection", (socket) => {
   socket.on("typing_stop", (conversationId: string) => {
     socket.to(conversationId).emit("user_stopped_typing", {
       userId: socketUserMap.get(socket.id),
+      username: activeUsers.get(socket.id)?.username,
     });
   });
 

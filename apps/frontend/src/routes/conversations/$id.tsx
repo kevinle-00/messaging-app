@@ -3,7 +3,7 @@ import { MessageInput } from "@/components/MessageInput";
 export const Route = createFileRoute("/conversations/$id")({
   component: ConversationPage,
 });
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { Message } from "@shared/schemas";
 import { messageSchema } from "@shared/schemas";
 import { z } from "zod";
@@ -22,8 +22,9 @@ function ConversationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [inputValue, setInputValue] = useState("");
-  // TODO: implement typing indicator UI
-  // const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
   const groupMessages = (messages: Message[]) => {
     const groups: Message[][] = [];
@@ -97,22 +98,28 @@ function ConversationPage() {
     });
 
     socket.emit("join_conversation", id);
+    setTypingUsers([]);
 
     socket.on("new_message", (data) => {
       const validatedMessage = messageSchema.parse(data);
 
       if (validatedMessage.senderId === user.id) return;
       setMessages((prev) => [...prev, validatedMessage]);
+      setTypingUsers((prev) =>
+        prev.filter((u) => u !== validatedMessage.sender.name)
+      );
       console.log("message received: ", validatedMessage);
     });
 
-    // socket.on("user_typing", (data) => {
-    //   setTypingUsers((prev) => [...prev, data.username]);
-    // });
+    socket.on("user_typing", (data: { username: string }) => {
+      setTypingUsers((prev) =>
+        prev.includes(data.username) ? prev : [...prev, data.username]
+      );
+    });
 
-    // socket.on("user_stopped_typing", (data) => {
-    //   setTypingUsers((prev) => prev.filter((user) => user !== data.username));
-    // });
+    socket.on("user_stopped_typing", (data: { username: string }) => {
+      setTypingUsers((prev) => prev.filter((u) => u !== data.username));
+    });
 
     return () => {
       socket.emit("leave_conversation", id);
@@ -121,6 +128,35 @@ function ConversationPage() {
       socket.off("user_stopped_typing");
     };
   }, [id, user]);
+
+  const handleTyping = useCallback(() => {
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      socket.emit("typing_start", id);
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      socket.emit("typing_stop", id);
+    }, 1500);
+  }, [id]);
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    if (value.trim()) {
+      handleTyping();
+    } else if (isTypingRef.current) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      isTypingRef.current = false;
+      socket.emit("typing_stop", id);
+    }
+  };
 
   const sendMessage = async () => {
     if (!inputValue.trim() || !user) return;
@@ -146,7 +182,13 @@ function ConversationPage() {
     setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
 
-    //TODO: need to make use of websockets so other user also has the messages rendered.
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      socket.emit("typing_stop", id);
+    }
 
     try {
       const res = await fetch(`/api/conversations/${id}/messages`, {
@@ -185,12 +227,18 @@ function ConversationPage() {
           ))
         )}
       </div>
+      {typingUsers.length > 0 && (
+        <div className="px-4 py-2 text-sm text-muted-foreground italic">
+          {typingUsers.length === 1
+            ? `${typingUsers[0]} is typing...`
+            : `${typingUsers.join(", ")} are typing...`}
+        </div>
+      )}
       <MessageInput
         value={inputValue}
-        onChange={setInputValue}
+        onChange={handleInputChange}
         sendMessage={sendMessage}
-      ></MessageInput>
+      />
     </div>
   );
 }
-
