@@ -103,7 +103,7 @@ function ConversationPage() {
     socket.on("new_message", (data) => {
       const validatedMessage = messageSchema.parse(data);
 
-      if (validatedMessage.senderId === user.id) return;
+      if (validatedMessage.senderId === user.id) return; 
       setMessages((prev) => [...prev, validatedMessage]);
       setTypingUsers((prev) =>
         prev.filter((u) => u !== validatedMessage.sender.name)
@@ -217,6 +217,8 @@ function ConversationPage() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">Start the conversation!</p>
         ) : (
           groupMessages(messages).map((group) => (
             <ChatGroup
