@@ -82,6 +82,12 @@ export const createConversation: RequestHandler<
     const validated = conversationSchema.parse(
       mapPrismaToConversation(conversation, userId),
     );
+    const io = getIO();
+    validated.participants.forEach((p) => {
+      if (p.userId !== userId) {
+        io.to(`user_${p.userId}`).emit("new_conversation", validated);
+      }
+    });
 
     res.status(201).json(validated);
   } catch (error) {

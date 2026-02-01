@@ -12,7 +12,6 @@ import { ConversationItem } from "./ConversationItem";
 import { useEffect, useState } from "react";
 import { AppSidebarFooter } from "./AppSidebarFooter";
 import { authClient } from "@/lib/authClient";
-import type { Conversation } from "@shared/schemas";
 import z from "zod";
 import { conversationSchema } from "@shared/schemas";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -36,8 +35,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { useConversationStore } from "@/stores/conversationStore";
+import socket from "@/lib/socket";
+
 export function AppSidebar() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const conversations = useConversationStore((s) => s.conversations);
+  const setConversations = useConversationStore((s) => s.setConversations);
+  const addConversation = useConversationStore((s) => s.addConversation);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newUsers, setNewUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
@@ -47,6 +52,20 @@ export function AppSidebar() {
   const navigate = useNavigate();
 
   const user = session?.user;
+
+  useEffect(() => {
+    if (!user) return;
+
+    socket.connect();
+    socket.emit("user_join", {
+      userId: user.id,
+      username: user.name,
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user]);
 
   const fetchNewUsers = async () => {
     setIsLoadingUsers(true);
@@ -94,6 +113,7 @@ export function AppSidebar() {
 
       const data = await res.json();
       const validated = conversationSchema.parse(data);
+      addConversation(validated);
       return validated;
     } catch (err) {
       console.error("Failed to create conversation:", err);
@@ -155,7 +175,18 @@ export function AppSidebar() {
     };
 
     fetchConversations();
-  }, [user?.id, isPending]);
+  }, [user?.id, isPending, setConversations]);
+
+  useEffect(() => {
+    socket.on("new_conversation", (conversation) => {
+      const validated = conversationSchema.parse(conversation);
+      addConversation(validated);
+    });
+
+    return () => {
+      socket.off("new_conversation");
+    };
+  }, [addConversation]);
 
   return (
     <Sidebar>

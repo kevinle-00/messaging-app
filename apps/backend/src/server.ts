@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
     ({ userId, username }: { userId: string; username: string }) => {
       activeUsers.set(socket.id, { userId, username });
       socketUserMap.set(socket.id, userId);
+      socket.join(`user_${userId}`);
       console.log(`${username} joined (${userId})`);
     },
   );

@@ -91,12 +91,6 @@ function ConversationPage() {
   useEffect(() => {
     if (!user) return;
 
-    socket.connect();
-    socket.emit("user_join", {
-      userId: user.id,
-      username: user.name,
-    });
-
     socket.emit("join_conversation", id);
     setTypingUsers([]);
 
